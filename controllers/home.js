@@ -1,10 +1,11 @@
+module.exports.controller = function(app) {
 /**
  * GET /
  * Home page.
  */
-
-exports.index = function(req, res) {
-  res.render('home', {
-    title: 'Home'
+ app.get('/', function(req, res) {
+	res.render('home', {
+	    title: 'Home'
+	  });
   });
-};
+}

@@ -1,7 +1,7 @@
 /**
  * Module dependencies.
  */
-
+var fs = require('fs');
 var express = require('express');
 var MongoStore = require('connect-mongo')(express);
 //allow for flash messages (error messages only shown once)
@@ -9,6 +9,7 @@ var flash = require('express-flash');
 //This module contains utilities for handling and transforming file paths.
 var path = require('path');
 var mongoose = require('mongoose');
+var elasticsearch = require('elasticsearch');
 var passport = require('passport');
 //to validate user input
 var expressValidator = require('express-validator');
@@ -21,26 +22,41 @@ var connectAssets = require('connect-assets');
 
 
 /**
- * Load controllers.
+ * Create Express server.
  */
 
-var homeController = require('./controllers/home');
-var userController = require('./controllers/user');
-var apiController = require('./controllers/api');
-var contactController = require('./controllers/contact');
+var app = express();
 
 /**
  * API keys + Passport configuration.
  */
 
 var secrets = require('./config/secrets');
-var passportConf = require('./config/passport');
+app.locals.passportConf = require('./config/passport');
 
 /**
- * Create Express server.
- */
+* ElasticSearch configuration
+*/
+app.locals.elasticsearchClient = new elasticsearch.Client({
+  host: 'localhost:9200',
+  log: 'trace',
+  apiVersion: '1.0'
+});
+app.locals.elasticsearchClient.ping({
+  // ping usually has a 100ms timeout
+  requestTimeout: 2000,
 
-var app = express();
+  // undocumented params are appended to the query string
+  hello: "elasticsearch!"
+}, function (error) {
+  if (error) {
+    console.error('✗ elasticsearch cluster is down! Make sure elasticsearch is running');
+    process.exit(1);
+  } else {
+    console.log('✔ Confirming elasticsearch is running');
+  }
+});
+
 
 /**
  * Mongoose configuration.
@@ -50,6 +66,7 @@ mongoose.connect(secrets.db);
 mongoose.connection.on('error', function() {
   console.error('✗ MongoDB Connection Error. Please make sure MongoDB is running.');
 });
+
 
 /**
  * Express configuration.
@@ -104,31 +121,16 @@ app.use(express.errorHandler());
 app.locals.pretty = true;
 
 /**
- * Application routes.
+ * Dynamically include routes (Controller)
  */
 
-app.get('/', homeController.index);
-app.get('/login', userController.getLogin);
-app.post('/login', userController.postLogin);
-app.get('/logout', userController.logout);
-app.get('/forgot', userController.getForgot);
-app.post('/forgot', userController.postForgot);
-app.get('/reset/:token', userController.getReset);
-app.post('/reset/:token', userController.postReset);
-app.get('/signup', userController.getSignup);
-app.post('/signup', userController.postSignup);
-app.get('/contact', contactController.getContact);
-app.post('/contact', contactController.postContact);
-app.get('/account', passportConf.isAuthenticated, userController.getAccount);
-app.post('/account/profile', passportConf.isAuthenticated, userController.postUpdateProfile);
-app.post('/account/password', passportConf.isAuthenticated, userController.postUpdatePassword);
-app.post('/account/delete', passportConf.isAuthenticated, userController.postDeleteAccount);
-app.get('/account/unlink/:provider', passportConf.isAuthenticated, userController.getOauthUnlink);
-app.get('/api', apiController.getApi);
-app.get('/api/facebook', passportConf.isAuthenticated, passportConf.isAuthorized, apiController.getFacebook);
-app.get('/api/github', passportConf.isAuthenticated, passportConf.isAuthorized, apiController.getGithub);
-app.get('/api/twitter', passportConf.isAuthenticated, passportConf.isAuthorized, apiController.getTwitter);
-app.get('/api/linkedin', passportConf.isAuthenticated, passportConf.isAuthorized, apiController.getLinkedin);
+fs.readdirSync('./controllers').forEach(function (file) {
+  if(file.substr(-3) == '.js') {
+      route = require('./controllers/' + file);
+      route.controller(app);
+  }
+});
+
 
 /**
  * OAuth routes for sign-in.

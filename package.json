@@ -1,6 +1,10 @@
 {
   "name": "volunteermanagement",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeromegv/volunteermanagement.git"
+  },
   "scripts": {
     "start": "node app.js",
     "test": "mocha"
@@ -33,8 +37,9 @@
     "twit": "~1.1.12",
     "underscore": "~1.6.0",
     "uglify-js": "~2.4.12",
-    "validator": "~3.4.0"
-    },
+    "validator": "~3.4.0",
+    "elasticsearch": "^1.5.10"
+  },
   "devDependencies": {
     "mocha": "~1.17.1",
     "chai": "~1.9.0",

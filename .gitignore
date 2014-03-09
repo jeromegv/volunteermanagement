@@ -19,5 +19,7 @@ node_modules
 *.iml
 .DS_Store
 Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
 buildAssets

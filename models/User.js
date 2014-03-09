@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var elasticsearch = require('elasticsearch');
 var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
 
@@ -45,6 +46,13 @@ userSchema.pre('save', function(next) {
     });
   });
 });
+
+userSchema.elasticsearchClient = new elasticsearch.Client({
+    host: 'localhost:9200',
+    log: 'trace',
+    apiVersion: '1.0'
+});
+
 
 /**
  * Validate user's password.
