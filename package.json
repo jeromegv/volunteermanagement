@@ -38,7 +38,8 @@
     "underscore": "~1.6.0",
     "uglify-js": "~2.4.12",
     "validator": "~3.4.0",
-    "elasticsearch": "^1.5.10"
+    "moment": "^2.5.1",
+    "elasticsearch": "^2.1.0"
   },
   "devDependencies": {
     "mocha": "~1.17.1",
