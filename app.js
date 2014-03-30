@@ -56,7 +56,7 @@ app.locals.elasticsearchClient.ping({
     console.log('✔ Confirming elasticsearch is running');
   }
 });
-
+//TODO how to handle having to set the mapping/setup indice on startup
 
 /**
  * Mongoose configuration.
@@ -92,6 +92,8 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(expressValidator());
 app.use(express.methodOverride());
+//TODO not so sure bodyparser should be used with Express 3.4.X, do research on that
+app.use(express.bodyParser());
 app.use(express.session({
   secret: secrets.sessionSecret,
   store: new MongoStore({
@@ -124,6 +126,7 @@ app.use(function(req, res) {
   res.status(404);
   res.render('404');
 });
+//TODO we do not handle "file too big error" when uploading files at the moment
 app.use(express.errorHandler());
 
 //TEMP KEEP FOR DEV for non-minified markup
