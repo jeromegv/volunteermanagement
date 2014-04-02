@@ -56,6 +56,106 @@ app.locals.elasticsearchClient.ping({
     console.log('✔ Confirming elasticsearch is running');
   }
 });
+//we make sure to configure elastic search on launch if it was never configured
+//TODO move to a proper file instead of app.js
+app.locals.elasticsearchClient.indices.exists({
+  index: 'applications'
+}, function (error, response,status) {
+  if (error){
+    console.error(error);
+    process.exit(1);
+  } else {
+    //the index applications is missing, create it
+    if (!response){
+      app.locals.elasticsearchClient.indices.create({
+        index: 'applications'
+    }, function (error, response,status) {
+        if (error){
+          console.error(error);
+          process.exit(1);
+        } else {
+          //add specific mapping to applications
+          if (status==200){
+            app.locals.elasticsearchClient.indices.putMapping({
+              index: 'applications',
+              type: 'application',
+              body:{
+                  application: {
+                      _source: {
+                        excludes: [
+                          "resume_attachment"
+                        ]
+                      },
+                      properties: {
+                                 email: {
+                                    type: "string"
+                                 },
+                                 name: {
+                                    type: "string"
+                                 },
+                                 position_id: {
+                                    type: "string"
+                                 },
+                                 resume: {
+                                    type: "string"
+                                 },
+                                 resume_attachment: {
+                                    type: "attachment",
+                                    fields: {
+                                      resume_attachment: {
+                                        store: "yes"
+                                      },
+                                      author: {
+                                        store : "yes"
+                                      },
+                                      title: {
+                                        store : "yes"
+                                       },
+                                      name: {
+                                        store : "yes"
+                                       },
+                                      date: {
+                                        store : "yes"
+                                       },
+                                      keywords: {
+                                         store : "yes"
+                                      },
+                                      content_type: {
+                                          store : "yes"
+                                       },
+                                      content_length: {
+                                          store : "yes"
+                                      }
+                                    }
+                                 }
+                      }
+                  }
+              }
+
+            }, function (error, response,status) {
+              if (error){
+                console.error(error);
+                process.exit(1);
+              } else {
+                if (status==200){
+                  console.log('Mapping for elasticsearch successfully set')
+                } else {
+                  console.error('Could not set mapping for elasticsearch applications collection. Make sure the Mapper Attachments Type plugin is installed.');
+                  process.exit(1);
+                }
+              }
+            
+            });
+          } else {
+            console.log('Could not create the applications index for elasticsearch');
+            process.exit(1);
+          }
+        }
+      });
+    }
+  }
+
+});
 //TODO how to handle having to set the mapping/setup indice on startup
 
 /**
