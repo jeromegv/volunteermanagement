@@ -1,4 +1,12 @@
 var fs = require('fs');
+var config = require('../config');
+//TODO MOVE TO .ENV
+var knoxclient = require('knox').createClient({
+    key: config.s3.key,
+    secret: config.s3.secret,
+    bucket: config.s3.bucket
+});
+
 
 module.exports.controller = function(app) {
   /**
@@ -31,7 +39,6 @@ module.exports.controller = function(app) {
       req.flash('errors', errors);
       return res.redirect('/apply');
     }
-
     //TODO limit on size
     //we will read the binary file uploaded by the user with the form and add it to elasticsearch
     //Will make the content of the file searchable, with the other attributes from the form
@@ -42,6 +49,28 @@ module.exports.controller = function(app) {
         req.flash('errors', { msg: 'Error occured while trying to read the file you uploaded, please consult the logs'});
         res.redirect('/apply');
       } else {
+
+        //upload to S3
+        var uploadknox = knoxclient.put('uploaded/'+req.body.email+'/'+Date.now()+req.files.resumefile.name, {
+          'Content-length': data.length,
+          'Content-Type': req.files.resumefile.type,
+          'x-amz-acl': 'public-read'
+        });
+        uploadknox.on('response', function(response){
+          if (200 == response.statusCode) {
+            console.log('saved to %s', uploadknox.url);
+          } else {
+            console.log('S3 did not respond with 200, response was:'+response.statusCode);
+          }
+        });
+        uploadknox.on('error', function(err) {
+          console.error('Error uploading to s3:', err);
+        });
+        uploadknox.end(data);
+
+
+
+
         //mapper-attachments plugin for elasticsearch requires us to send attachment in base64
         var base64data = new Buffer(data).toString("base64");
         //create record in elasticsearch
@@ -66,6 +95,8 @@ module.exports.controller = function(app) {
             res.redirect('/apply');
           }
         });
+
+
       }
     });
     
