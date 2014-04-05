@@ -127,6 +127,9 @@ app.locals.elasticsearchClient.indices.exists({
                                           store : "yes"
                                       }
                                     }
+                                 }, 
+                                 resume_attachment_url: {
+                                    type: "string"
                                  }
                       }
                   }
