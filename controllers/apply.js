@@ -1,6 +1,8 @@
 var fs = require('fs');
 var config = require('../config');
 var async = require('async');
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill(config.mandrill.key);
 
 //configuring S3 access, where the resume will be stored
 var knoxclient = require('knox').createClient({
@@ -44,7 +46,6 @@ module.exports.controller = function(app) {
     //TODO limit on size
     //we  read the binary file uploaded by the user with the form and add it to elasticsearch
     //Will make the content of the file searchable, with the other attributes from the form
-    //TODO: Add S3 file path to records on ElasticSearch
     fs.readFile(req.files.resumefile.path, function (error, data) {
       if (error){
         console.log(error);
@@ -52,7 +53,8 @@ module.exports.controller = function(app) {
         res.redirect('/apply');
       } else {
 
-        
+        var base64data = new Buffer(data).toString("base64");
+ 
         async.waterfall([
           function(done){
             //upload to S3 if file exists
@@ -81,10 +83,9 @@ module.exports.controller = function(app) {
               done(null,'');
             }
           },
-          function (url,done){
+          function(url,done){
             //create record of the application in elasticsearch
             //mapper-attachments plugin for elasticsearch requires us to send attachment in base64
-            var base64data = new Buffer(data).toString("base64");
             //create record in elasticsearch
             app.locals.elasticsearchClient.create({
               index: 'applications',
@@ -101,6 +102,61 @@ module.exports.controller = function(app) {
             }, function (error, response) {
               done(error,response)
             });
+          },
+          function(response,done){
+            //send email to org that someone applied
+            var template_name = "email-to-organization-that-an-applicant-applied";
+            var template_content = {};
+            var message = {
+              "to": [{
+                  "email": 'gelaineyyy@gmail.com',
+                  "name": 'Project Burrito',
+                  "type": "to"
+                }],
+              "merge": true,
+              "global_merge_vars": [{
+                  "name": "ORGANIZATION_NAME",
+                  "content": "Project Burrito"  
+                },{
+                  "name": "APPLICANT_CONTACT_NAME",
+                  "content": req.body.name  
+                },{
+                  "name": "POSITION_NAME",
+                  "content": req.body.position_id  
+                }],
+              "tags": [
+                "applicant_applied"
+              ]
+            };
+            //add attachment to the email if there was one with the application
+            if (req.files.resumefile.size>0){
+              message.attachments= [{
+                "type": req.files.resumefile.type,
+                "name": req.files.resumefile.name,
+                "content": base64data
+                }];
+            }
+            var async = true;
+            var ip_pool = "Main Pool";
+            var send_at = null;
+            mandrill_client.messages.sendTemplate({"template_name": template_name, "template_content": template_content, "message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at},               
+              function(result) {
+                  console.log(result);
+                  /*
+                  [{
+                          "email": "recipient.email@example.com",
+                          "status": "sent",
+                          "reject_reason": "hard-bounce",
+                          "_id": "abc123abc123abc123abc123abc123"
+                      }]
+                  */
+                 done(null,'');
+              }, function(e) {
+                  // Mandrill returns the error as an object with name and message keys
+                  console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+                  done(e,'');
+                  // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
+              });              
           }
           ], function (error, result) {
              if (error){
