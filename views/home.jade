@@ -1,8 +1,22 @@
 extends layout
 
 block content
-  h1 Bootstrap starter template
+  h1 List of applicants
   p.lead
-    | Use this document as a way to quickly start any new project.
-    br
-    | All you get is this text and a mostly barebones HTML document.
+    table(class="table table-striped")
+        thead
+            th Name
+            th Email
+            th Job ID
+            th Time
+            th Resume
+        each item in results
+            tr
+                td= item.fields.name
+                td= item.fields.email
+                td= item.fields.position_id
+                td= moment(item.fields._timestamp).format("YYYY-MM-DD HH:mm")
+                td 
+                    if item.fields.resume_attachment_url!=''
+                        a(href=item.fields.resume_attachment_url,target="blank")
+                            span(class="glyphicon glyphicon-file")
