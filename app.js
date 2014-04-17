@@ -86,6 +86,10 @@ app.locals.elasticsearchClient.indices.exists({
                           "resume_attachment"
                         ]
                       },
+                       _timestamp : { 
+                                  enabled : true,
+                                  store: "yes" 
+                      },
                       properties: {
                                  email: {
                                     type: "string"
