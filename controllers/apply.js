@@ -100,8 +100,9 @@ module.exports.controller = function(app) {
                 resume_attachment_url: url
               }
             }, function (error, response) {
-              done(error,response)
+              
             });
+            done(null,'');
           },
           function(response,done){
             //send email to org that someone applied
@@ -109,7 +110,7 @@ module.exports.controller = function(app) {
             var template_content = {};
             var message = {
               "to": [{
-                  "email": 'gelaineyyy@gmail.com',
+                  "email": 'gagnonje@gmail.com',
                   "name": 'Project Burrito',
                   "type": "to"
                 }],
@@ -134,7 +135,7 @@ module.exports.controller = function(app) {
                 "type": req.files.resumefile.type,
                 "name": req.files.resumefile.name,
                 "content": base64data
-                }];
+                }]; 
             }
             var async = true;
             var ip_pool = "Main Pool";
@@ -142,21 +143,12 @@ module.exports.controller = function(app) {
             mandrill_client.messages.sendTemplate({"template_name": template_name, "template_content": template_content, "message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at},               
               function(result) {
                   console.log(result);
-                  /*
-                  [{
-                          "email": "recipient.email@example.com",
-                          "status": "sent",
-                          "reject_reason": "hard-bounce",
-                          "_id": "abc123abc123abc123abc123abc123"
-                      }]
-                  */
-                 done(null,'');
               }, function(e) {
                   // Mandrill returns the error as an object with name and message keys
                   console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
-                  done(e,'');
-                  // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
-              });              
+              });
+              //we send the email in async so we don't wait for it to be uploaded to go to next step  
+              done(null,'');            
           }
           ], function (error, result) {
              if (error){
@@ -170,43 +162,5 @@ module.exports.controller = function(app) {
           });
       }
     });
-    
-    /*fs.readFile(req.files.resumefile.path, function (err, data) {
-      // ...
-      var newPath = __dirname + "/uploads/uploadedFileName";
-      console.log(newPath);
-      fs.writeFile(newPath, data, function (err) {
-        if (err){
-          console.log(err);
-          req.flash('error', { msg: 'Error occured' });
-          res.redirect('/apply');
-        } else {
-          req.flash('success', { msg: 'File has been sent successfully!' });
-          res.redirect('/apply');
-        }
-      });
-    });*/
-    //TODO implement email notification both to applicant and manager
-    /*var from = req.body.email;
-    var name = req.body.name;
-    var body = req.body.resume;
-    var to = 'your@email.com';
-    var subject = 'API Example | Contact Form';
-
-    var mailOptions = {
-      to: to,
-      from: from,
-      subject: subject,
-      text: body + '\n\n' + name
-    };
-
-    smtpTransport.sendMail(mailOptions, function(err) {
-      if (err) {
-        req.flash('errors', { msg: err.message });
-        return res.redirect('/contact');
-      }
-      req.flash('success', { msg: 'Email has been sent successfully!' });
-      res.redirect('/contact');
-    });*/
   });
 }
