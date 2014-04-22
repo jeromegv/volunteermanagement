@@ -10,3 +10,4 @@ Required
 - MongoDB
 - elasticsearch http://www.elasticsearch.org
 - Mapper Attachments Type plugin for Elasticsearch https://github.com/elasticsearch/elasticsearch-mapper-attachments
+- Mandrill (for email confirmations)

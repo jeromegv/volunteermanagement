@@ -163,7 +163,6 @@ app.locals.elasticsearchClient.indices.exists({
   }
 
 });
-//TODO how to handle having to set the mapping/setup indice on startup
 
 /**
  * Mongoose configuration.

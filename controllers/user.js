@@ -6,6 +6,7 @@ var passport = require('passport');
 var User = require('../models/User');
 var secrets = require('../config/secrets');
 
+//TODO stop using nodemailer and switch to mandrill
 
 module.exports.controller = function(app) {
   /**
@@ -97,51 +98,21 @@ module.exports.controller = function(app) {
     var user = new User({
       email: req.body.email,
       password: req.body.password
-  });
-
-
-    //save to elastic search
-    app.locals.elasticsearchClient.create({
-      index: 'users',
-      type: 'user',
-      id: user.email,
-      body: {
-        email: user.email,
-        password: user.password
-      }
-    }, function (error, response) {
-      if (error){
-        console.log(error);
-      } else {
-        //temp, do not disable mongodb yet
-        user.save(function(err) {
-          if (err) {
-            if (err.code === 11000) {
-              req.flash('errors', { msg: 'User with that email already exists.' });
-            }
-            return res.redirect('/signup');
-          }
-          req.logIn(user, function(err) {
-            if (err) return next(err);
-            res.redirect('/');
-          });
-        });
-      }
-
     });
 
-      /*user.save(function(err) {
-          if (err) {
-            if (err.code === 11000) {
-              req.flash('errors', { msg: 'User with that email already exists.' });
-            }
-            return res.redirect('/signup');
-          }
-          req.logIn(user, function(err) {
-            if (err) return next(err);
-            res.redirect('/');
-          });
-        });*/
+
+    user.save(function(err) {
+      if (err) {
+        if (err.code === 11000) {
+          req.flash('errors', { msg: 'User with that email already exists.' });
+        }
+        return res.redirect('/signup');
+      }
+      req.logIn(user, function(err) {
+        if (err) return next(err);
+        res.redirect('/');
+      });
+    });
   });
 
   /**
