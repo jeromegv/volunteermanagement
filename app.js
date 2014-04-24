@@ -32,13 +32,19 @@ var app = express();
  */
 
 var secrets = require('./config/secrets');
+var config = require('./config');
 app.locals.passportConf = require('./config/passport');
 
 /**
 * ElasticSearch configuration
 */
 app.locals.elasticsearchClient = new elasticsearch.Client({
-  host: 'localhost:9200',
+  host: {
+    protocol: config.elasticsearch.protocol,
+    host: config.elasticsearch.host,
+    port: config.elasticsearch.port,
+    auth: config.elasticsearch.user+':'+config.elasticsearch.password
+  },
   log: 'trace',
   apiVersion: '1.0'
 });
@@ -169,8 +175,10 @@ app.locals.elasticsearchClient.indices.exists({
  */
 
 mongoose.connect(secrets.db);
-mongoose.connection.on('error', function() {
+mongoose.connection.on('error', function(err) {
+  console.log(err);
   console.error('✗ MongoDB Connection Error. Please make sure MongoDB is running.');
+  process.exit(1);
 });
 
 
