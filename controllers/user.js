@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var async = require('async');
 var crypto = require('crypto');
+//TODO delete dependency on nodemailer and use mandrill
 var nodemailer = require('nodemailer');
 var passport = require('passport');
 var User = require('../models/User');
