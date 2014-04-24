@@ -1,8 +1,10 @@
 /**
  * Module dependencies.
  */
+ //read filesystem
 var fs = require('fs');
 var express = require('express');
+//to use mongo as a session store for express
 var MongoStore = require('connect-mongo')(express);
 //allow for flash messages (error messages only shown once)
 var flash = require('express-flash');
@@ -30,7 +32,7 @@ var app = express();
 /**
  * API keys + Passport configuration.
  */
-
+//TODO merge config and secrets in the same config file
 var secrets = require('./config/secrets');
 var config = require('./config');
 app.locals.passportConf = require('./config/passport');
@@ -45,6 +47,7 @@ app.locals.elasticsearchClient = new elasticsearch.Client({
     port: config.elasticsearch.port,
     auth: config.elasticsearch.user+':'+config.elasticsearch.password
   },
+  //TODO figure out the trace we want here
   log: 'trace',
   apiVersion: '1.0'
 });
@@ -200,6 +203,7 @@ app.use(connectAssets({
 }));
 app.use(express.compress());
 app.use(express.favicon());
+//TODO need to figure out if we want to change the logger config for prod
 app.use(express.logger('dev'));
 app.use(express.cookieParser());
 app.use(express.json());
