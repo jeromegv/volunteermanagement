@@ -60,6 +60,7 @@ module.exports.controller = function(app) {
             //upload to S3 if file exists
             //if upload fails, we keep going with our waterfall, we still want to save the form to elastic search in the next step
             if (req.files.resumefile.size>0){
+              //TODO right now it puts those files as public-read, we might want to revisit that
               var uploadknox = knoxclient.put('uploaded/'+req.body.email+'/'+Date.now()+req.files.resumefile.name, {
                 'Content-length': data.length,
                 'Content-Type': req.files.resumefile.type,
