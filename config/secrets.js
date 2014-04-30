@@ -1,7 +1,7 @@
 module.exports = {
-  //TEMP will need to change for prod
+  //Path to MongoDb database
   db: 'mongodb://localhost:27017/test',
-  //TEMP will need to change for prod, read doc on express to know what it's used for
+  //Session secret for Express, needs to be changed
   sessionSecret: "Your Session Secret goes here",
 
   localAuth: true,

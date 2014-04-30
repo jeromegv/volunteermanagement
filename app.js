@@ -53,7 +53,7 @@ app.locals.elasticsearchClient = new elasticsearch.Client({
 });
 app.locals.elasticsearchClient.ping({
   // ping usually has a 100ms timeout
-  requestTimeout: 2000,
+  requestTimeout: 5000,
 
   // undocumented params are appended to the query string
   hello: "elasticsearch!"
@@ -208,10 +208,12 @@ app.use(express.logger('dev'));
 app.use(express.cookieParser());
 app.use(express.json());
 app.use(express.urlencoded());
+
 app.use(expressValidator());
 app.use(express.methodOverride());
-//TODO not so sure bodyparser should be used with Express 3.4.X, do research on that
-app.use(express.bodyParser());
+//this will cache the static content for a week
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: week }));
+
 app.use(express.session({
   secret: secrets.sessionSecret,
   store: new MongoStore({
@@ -219,9 +221,10 @@ app.use(express.session({
     auto_reconnect: true
   })
 }));
-app.use(express.csrf());
+
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.csrf());
 app.use(function(req, res, next) {
   res.locals.user = req.user;
   res.locals._csrf = req.csrfToken();
@@ -229,8 +232,6 @@ app.use(function(req, res, next) {
   next();
 });
 app.use(flash());
-//this will cache the static content for a week
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: week }));
 app.use(function(req, res, next) {
   // Keep track of previous URL
   if (req.method !== 'GET') return next();
@@ -247,7 +248,7 @@ app.use(function(req, res) {
 //TODO we do not handle "file too big error" when uploading files at the moment
 app.use(express.errorHandler());
 
-//TEMP KEEP FOR DEV for non-minified markup
+//Only keep for DEV to have non-minified markup
 app.locals.pretty = true;
 
 /**
