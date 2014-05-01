@@ -5,6 +5,8 @@ var mandrill = require('mandrill-api/mandrill');
 var mandrill_client = new mandrill.Mandrill(config.mandrill.key);
 //to handle file attachment upload safely
 var multiparty = require('multiparty');
+var validator = require('validator');
+
 
 //configuring S3 access, where the resume will be stored
 var knoxclient = require('knox').createClient({
@@ -47,17 +49,21 @@ module.exports.controller = function(app) {
         return;
       }
 
-      /* TODO: find way to do assert without req.assert to validate form
-      req.assert('name', 'Name cannot be blank').notEmpty();
-      req.assert('email', 'Email is not valid').isEmail();
-      req.assert('resume', 'Resume cannot be blank').notEmpty();
+      // server side field validation
+      // TODO add client-side field validation
+      // TODO complete validation once we have more field
+      var errorMsg;
+      if (!validator.isEmail(fields.email[0])){
+        errorMsg='Email is not valid';
+      } else if (!fields.name[0]){
+        errorMsg='You must enter your name';
+      }
       
-      var errors = req.validationErrors();
-
-      if (errors) {
-        req.flash('errors', errors);
-        return res.redirect('/apply');
-      }*/
+      if (errorMsg) {
+        req.flash('errors', { msg: errorMsg});
+        res.redirect('/apply');
+        return;
+      }
 
       file = files.resumefile[0];
       //todo look at file size before reading the file
@@ -67,7 +73,7 @@ module.exports.controller = function(app) {
         if (error){
           console.log(error);
           req.flash('errors', { msg: 'Error occured while trying to read the file you uploaded, please consult the logs'});
-          res.redirect('/apply');
+          return res.redirect('/apply');
         } else {
           var base64data = new Buffer(data).toString("base64");
           async.waterfall([
@@ -174,7 +180,7 @@ module.exports.controller = function(app) {
                 if (error){
                   console.log(error);
                   req.flash('errors', { msg: 'Error occured: ' + error.message });
-                  res.redirect('/apply');
+                  return res.redirect('/apply');
                 } else {
                   req.flash('success', { msg: 'Application has been sent successfully!' });
                   res.redirect('/apply');
