@@ -1,13 +1,12 @@
 var _ = require('underscore');
 var async = require('async');
 var crypto = require('crypto');
-//TODO delete dependency on nodemailer and use mandrill
-var nodemailer = require('nodemailer');
+var config = require('../config');
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill(config.mandrill.key);
 var passport = require('passport');
 var User = require('../models/User');
 var secrets = require('../config/secrets');
-
-//TODO stop using nodemailer and switch to mandrill
 
 module.exports.controller = function(app) {
   /**
@@ -155,7 +154,7 @@ module.exports.controller = function(app) {
    */
 
   app.post('/account/password', app.locals.passportConf.isAuthenticated, function(req, res, next) {
-    req.assert('password', 'Password must be at least 4 characters long').len(6);
+    req.assert('password', 'Password must be at least 6 characters long').len(6);
     req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
 
     var errors = req.validationErrors();
@@ -165,16 +164,57 @@ module.exports.controller = function(app) {
       return res.redirect('/account');
     }
 
-    User.findById(req.user.id, function(err, user) {
+    async.waterfall([
+      function(done) {
+        User.findById(req.user.id, function(err, user) {
+          if (err) return next(err);
+
+          user.password = req.body.password;
+
+          user.save(function(err) {
+            if (err) return next(err);
+            done(err, user);
+          });
+        });
+      }, function (user,done){
+        //send email to confirm the password has been changed
+        var template_name = "your-password-has-been-changed";
+        var template_content = {};
+        var message = {
+          "to": [{
+              "email": user.email,
+              "name": user.profile.name,
+              "type": "to"
+            }],
+          "merge": true,
+          "global_merge_vars": [{
+              "name": "USERNAME",
+              "content": user.profile.name  
+            },{
+              "name": "USEREMAIL",
+              "content": user.email  
+            }],
+          "tags": [
+            "password_emails"
+          ]
+        };
+        var async = false;
+        var ip_pool = "Main Pool";
+        var send_at = null;
+        mandrill_client.messages.sendTemplate({"template_name": template_name, "template_content": template_content, "message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at},               
+          function(result) {
+            req.flash('success', { msg: 'Success! Your password has been changed.' });
+            done(null);
+          }, function(e) {
+            // Mandrill returns the error as an object with name and message keys
+            console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+            req.flash('errors', { msg: 'A mandrill error occurred: ' + e.name + ' - ' + e.message});
+            done(e);
+        });
+      }
+      ], function(err) {
       if (err) return next(err);
-
-      user.password = req.body.password;
-
-      user.save(function(err) {
-        if (err) return next(err);
-        req.flash('success', { msg: 'Password has been changed.' });
-        res.redirect('/account');
-      });
+      res.redirect('/account');
     });
   });
 
@@ -245,7 +285,7 @@ module.exports.controller = function(app) {
    */
 
   app.post('/reset/:token', function(req, res, next) {
-    req.assert('password', 'Password must be at least 4 characters long.').len(6);
+    req.assert('password', 'Password must be at least 6 characters long.').len(6);
     req.assert('confirm', 'Passwords must match.').equals(req.body.password);
 
     var errors = req.validationErrors();
@@ -279,23 +319,39 @@ module.exports.controller = function(app) {
           });
       },
       function(user, done) {
-        var smtpTransport = nodemailer.createTransport('SMTP', {
-          service: 'SendGrid',
-          auth: {
-            user: secrets.sendgrid.user,
-            pass: secrets.sendgrid.password
-          }
-        });
-        var mailOptions = {
-          to: user.email,
-          from: 'hackathon@starter.com',
-          subject: 'Your Hackathon Starter password has been changed',
-          text: 'Hello,\n\n' +
-            'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
+        //send email to confirm the password has been changed
+        var template_name = "your-password-has-been-changed";
+        var template_content = {};
+        var message = {
+          "to": [{
+              "email": user.email,
+              "name": user.profile.name,
+              "type": "to"
+            }],
+          "merge": true,
+          "global_merge_vars": [{
+              "name": "USERNAME",
+              "content": user.profile.name  
+            },{
+              "name": "USEREMAIL",
+              "content": user.email  
+            }],
+          "tags": [
+            "password_emails"
+          ]
         };
-        smtpTransport.sendMail(mailOptions, function(err) {
-          req.flash('success', { msg: 'Success! Your password has been changed.' });
-          done(err);
+        var async = false;
+        var ip_pool = "Main Pool";
+        var send_at = null;
+        mandrill_client.messages.sendTemplate({"template_name": template_name, "template_content": template_content, "message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at},               
+          function(result) {
+            req.flash('success', { msg: 'Success! Your password has been changed.' });
+            done(null);
+          }, function(e) {
+            // Mandrill returns the error as an object with name and message keys
+            console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+            req.flash('errors', { msg: 'A mandrill error occurred: ' + e.name + ' - ' + e.message});
+            done(e);
         });
       }
     ], function(err) {
@@ -344,7 +400,9 @@ module.exports.controller = function(app) {
       function(token, done) {
         User.findOne({ email: req.body.email.toLowerCase() }, function(err, user) {
           if (!user) {
-            req.flash('errors', { msg: 'No account with that email address exists.' });
+            //we do not want to tell if the user email exists in the database or not, so same generic message
+            req.flash('info', { msg: 'An e-mail has been sent to ' + req.body.email.toLowerCase() + ' with further instructions.' });
+            console.log("Someone tried to reset a password on a non existing email: "+ req.body.email.toLowerCase());
             return res.redirect('/forgot');
           }
 
@@ -356,27 +414,44 @@ module.exports.controller = function(app) {
           });
         });
       },
-      function(token, user, done) {
-        var smtpTransport = nodemailer.createTransport('SMTP', {
-          service: 'SendGrid',
-          auth: {
-            user: secrets.sendgrid.user,
-            pass: secrets.sendgrid.password
-          }
-        });
-        var mailOptions = {
-          to: user.email,
-          from: 'hackathon@starter.com',
-          subject: 'Reset your password on Hackathon Starter',
-          text: 'You are receiving this email because you (or someone else) have requested the reset of the password for your account.\n\n' +
-            'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-            'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-            'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-        };
-        smtpTransport.sendMail(mailOptions, function(err) {
-          req.flash('info', { msg: 'An e-mail has been sent to ' + user.email + ' with further instructions.' });
-          done(err, 'done');
-        });
+        function(token, user, done) {
+          //send email to confirm the password has been changed
+          var template_name = "reset-your-password";
+          var template_content = {};
+          var message = {
+            "to": [{
+                "email": user.email,
+                "name": user.profile.name,
+                "type": "to"
+              }],
+            "merge": true,
+            "global_merge_vars": [{
+                "name": "USERNAME",
+                "content": user.profile.name  
+              },{
+                "name": "USEREMAIL",
+                "content": user.email  
+              },{
+                "name": "RESETLINK",
+                "content": 'http://' + req.headers.host + '/reset/' + token
+              }],
+            "tags": [
+              "password_emails"
+            ]
+          };
+          var async = false;
+          var ip_pool = "Main Pool";
+          var send_at = null;
+          mandrill_client.messages.sendTemplate({"template_name": template_name, "template_content": template_content, "message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at},               
+            function(result) {
+              req.flash('info', { msg: 'An e-mail has been sent to ' + user.email + ' with further instructions.' });
+              done(null);
+            }, function(e) {
+              // Mandrill returns the error as an object with name and message keys
+              console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
+              req.flash('errors', { msg: 'A mandrill error occurred: ' + e.name + ' - ' + e.message});
+              done(e);
+          });
       }
     ], function(err) {
       if (err) return next(err);

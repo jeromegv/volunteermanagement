@@ -34,7 +34,7 @@ elasticsearchClient.ping({
   }
 });
 
-
+//setup the index to host the candidates applications, if it does not exist yet
 elasticsearchClient.indices.exists({
   index: 'applications'
 }, function (error, response,status) {
@@ -140,7 +140,7 @@ elasticsearchClient.indices.exists({
   }
 });
 
-//we make sure to configure elastic search on launch if it was never configured
+//setup the index to host the list of job description, if it does not exist yet
 elasticsearchClient.indices.exists({
   index: 'jobdescriptions'
 }, function (error, response,status) {
