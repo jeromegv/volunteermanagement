@@ -22,7 +22,7 @@ var moment = require('moment');
   			});
       } else {
       	console.log(error);
-        req.flash('errors', errors);
+        req.flash('errors', error);
       }
     });
   });
