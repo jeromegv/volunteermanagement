@@ -1,0 +1,26 @@
+extends layout
+
+block content
+  h1 Search Results
+  p.lead
+    table(class="table table-striped")
+        thead
+            th Name
+            th Email
+            th Job ID
+            th Time
+            th Highlight from the resume
+            th Resume
+        each item in results
+            tr
+                td= item.fields.name
+                td= item.fields.email
+                td= item.fields.position_id
+                td= moment(item.fields._timestamp).format("YYYY-MM-DD HH:mm")
+                td 
+                    if item.highlight!=undefined
+                        span!=item.highlight.resume_attachment
+                td 
+                    if item.fields.resume_attachment_url!=''
+                        a(href=item.fields.resume_attachment_url,target="blank")
+                            span(class="glyphicon glyphicon-file")

@@ -23,6 +23,10 @@
             li(class=title=='Create Account'?'active':undefined)
               a(href='/signup') Create Account
         else
+          if user
+            form(class="navbar-form navbar-left" role="search" action="/search")
+              div(class="form-group")
+                input(type="search",class="form-control", placeholder="Search", name="query")
           li.dropdown(class=title=='Account Management'?'active':undefined)
             a.dropdown-toggle(href='#', data-toggle='dropdown')
               if user.profile.picture

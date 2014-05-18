@@ -14,7 +14,7 @@ var moment = require('moment');
       fields: 'name,email,_timestamp,position_id,resume_attachment_url'
     }, function (error, response) {
       if (!error){
-      	console.log(response.hits.hits);
+      	//console.log(response.hits.hits);
       	res.render('home', {
   				 title: 'Home',
   				 results: response.hits.hits,
