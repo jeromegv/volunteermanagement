@@ -90,7 +90,7 @@ passport.use(new FacebookStrategy(secrets.facebook, function(req, accessToken, r
           user.tokens.push({ kind: 'facebook', accessToken: accessToken });
           user.profile.name = profile.displayName;
           user.profile.picture = 'https://graph.facebook.com/' + profile.id + '/picture?type=large';
-          user.profile.location = (profile._json.location) ? profile._json.location.name : '';
+          //user.profile.location = (profile._json.location) ? profile._json.location.name : '';
           user.save(function(err) {
             done(err, user);
           });
@@ -116,7 +116,7 @@ passport.use(new GitHubStrategy(secrets.github, function(req, accessToken, refre
           user.tokens.push({ kind: 'github', accessToken: accessToken });
           user.profile.name = user.profile.name || profile.displayName;
           user.profile.picture = user.profile.picture || profile._json.avatar_url;
-          user.profile.location = user.profile.location || profile._json.location;
+          //user.profile.location = user.profile.location || profile._json.location;
           user.profile.website = user.profile.website || profile._json.blog;
           user.save(function(err) {
             req.flash('info', { msg: 'GitHub account has been linked.' });
@@ -139,7 +139,7 @@ passport.use(new GitHubStrategy(secrets.github, function(req, accessToken, refre
           user.tokens.push({ kind: 'github', accessToken: accessToken });
           user.profile.name = profile.displayName;
           user.profile.picture = profile._json.avatar_url;
-          user.profile.location = profile._json.location;
+          //user.profile.location = profile._json.location;
           user.profile.website = profile._json.blog;
           user.save(function(err) {
             done(err, user);
@@ -165,7 +165,7 @@ passport.use(new TwitterStrategy(secrets.twitter, function(req, accessToken, tok
           user.twitter = profile.id;
           user.tokens.push({ kind: 'twitter', accessToken: accessToken, tokenSecret: tokenSecret });
           user.profile.name = user.profile.name || profile.displayName;
-          user.profile.location = user.profile.location || profile._json.location;
+          //user.profile.location = user.profile.location || profile._json.location;
           user.profile.picture = user.profile.picture || profile._json.profile_image_url;
           user.save(function(err) {
             req.flash('info', { msg: 'Twitter account has been linked.' });
@@ -186,7 +186,7 @@ passport.use(new TwitterStrategy(secrets.twitter, function(req, accessToken, tok
       user.twitter = profile.id;
       user.tokens.push({ kind: 'twitter', accessToken: accessToken, tokenSecret: tokenSecret });
       user.profile.name = profile.displayName;
-      user.profile.location = profile._json.location;
+      //user.profile.location = profile._json.location;
       user.profile.picture = profile._json.profile_image_url;
       user.save(function(err) {
         done(err, user);
@@ -259,7 +259,7 @@ passport.use(new LinkedInStrategy(secrets.linkedin, function(req, accessToken, r
           user.linkedin = profile.id;
           user.tokens.push({ kind: 'linkedin', accessToken: accessToken });
           user.profile.name = user.profile.name || profile.displayName;
-          user.profile.location = user.profile.location || profile._json.location.name;
+          //user.profile.location = user.profile.location || profile._json.location.name;
           user.profile.picture = user.profile.picture || profile._json.pictureUrl;
           user.profile.website = user.profile.website || profile._json.publicProfileUrl;
           user.save(function(err) {
@@ -282,7 +282,7 @@ passport.use(new LinkedInStrategy(secrets.linkedin, function(req, accessToken, r
           user.tokens.push({ kind: 'linkedin', accessToken: accessToken });
           user.email = profile._json.emailAddress;
           user.profile.name = profile.displayName;
-          user.profile.location = profile._json.location.name;
+          //user.profile.location = profile._json.location.name;
           user.profile.picture = profile._json.pictureUrl;
           user.profile.website = profile._json.publicProfileUrl;
           user.save(function(err) {

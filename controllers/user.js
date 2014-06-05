@@ -136,7 +136,7 @@ module.exports.controller = function(app) {
       if (err) return next(err);
       user.email = req.body.email || '';
       user.profile.name = req.body.name || '';
-      user.profile.location = req.body.location || '';
+      user.profile.orgname = req.body.orgname || '';
       user.profile.website = req.body.website || '';
 
       user.save(function(err) {
