@@ -77,6 +77,9 @@ elasticsearchClient.indices.exists({
                                  position_id: {
                                     type: "string"
                                  },
+                                 orgid: {
+                                    type: "string"
+                                 },
                                  resume: {
                                     type: "string"
                                  },

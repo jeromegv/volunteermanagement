@@ -7,6 +7,10 @@ block content
   form.form-horizontal(action='/account/profile', method='POST')
     input(type='hidden', name='_csrf', value=_csrf)
     .form-group
+      label.col-sm-2.control-label(for='orgname') Organization Name
+      .col-sm-4
+        input.form-control(type='text', name='orgname', id='orgname', value='#{user.profile.orgname}')
+    .form-group
       label.col-sm-2.control-label(for='email') Email
       .col-sm-4
         input.form-control(type='email', name='email', id='email', value='#{user.email}')
@@ -14,10 +18,6 @@ block content
       label.col-sm-2.control-label(for='name') Your Name
       .col-sm-4
         input.form-control(type='text', name='name', id='name', value='#{user.profile.name}')
-    .form-group
-      label.col-sm-2.control-label(for='orgname') Organization Name
-      .col-sm-4
-        input.form-control(type='text', name='orgname', id='orgname', value='#{user.profile.orgname}')
     .form-group
       label.col-sm-2.control-label(for='website') Website
       .col-sm-4

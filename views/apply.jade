@@ -6,6 +6,9 @@ block content
 
   form.form-horizontal(role='form', method='POST',action='/apply?_csrf='+encodeURIComponent(_csrf), enctype="multipart/form-data")
     input(type='hidden', name='position_id', value='12345')
+    //-TODO we probably dont want to put orgid inside apply.jade, perhaps it should be derived from
+    //-the position_id once someone has submitted it
+    input(type='hidden', name='orgid', value='#{user.orgid}')
     .form-group
       label(class='col-sm-2 control-label', for='name') Name
       .col-sm-8

@@ -7,6 +7,9 @@ var mandrill_client = new mandrill.Mandrill(config.mandrill.key);
 var passport = require('passport');
 var User = require('../models/User');
 var secrets = require('../config/secrets');
+//to generate unique ID for orgid
+var format = require('biguint-format');
+var idGen = new (require('flake-idgen'));
 
 module.exports.controller = function(app) {
   /**
@@ -97,7 +100,8 @@ module.exports.controller = function(app) {
 
     var user = new User({
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
+      orgid: format(idGen.next(), 'hex')
     });
 
 
@@ -222,6 +226,8 @@ module.exports.controller = function(app) {
    * POST /account/delete
    * Delete user account.
    * @param id - User ObjectId
+   * TODO confirmation message before deleting the account, might also be more complex to delete
+   * want to ensure we delete all job postings and job applications
    */
 
   app.post('/account/delete', app.locals.passportConf.isAuthenticated, function(req, res, next) {
