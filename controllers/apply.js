@@ -124,6 +124,7 @@ module.exports.controller = function(app) {
               },
               function(response,callback){
                 //send email to org that someone applied
+                //TODO get organization name from mongo instead of hardcoding
                 var template_name = "email-to-organization-that-an-applicant-applied";
                 var template_content = {};
                 var message = {

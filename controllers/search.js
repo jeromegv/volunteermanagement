@@ -11,7 +11,7 @@ var moment = require('moment');
       body: {
         query: {
           query_string: {
-            query: req.query.query
+            query: 'orgid:'+req.user.orgid + ' AND ' + req.query.query
           }
         },
         highlight : {
