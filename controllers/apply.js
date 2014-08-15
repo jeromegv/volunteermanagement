@@ -34,6 +34,7 @@ module.exports.controller = function(app) {
    * @param email
    * @param name
    * @param resume
+   //TODO figure out if we need req,res,next instead of req,res
    */
 
   app.post('/apply',function(req, res) {

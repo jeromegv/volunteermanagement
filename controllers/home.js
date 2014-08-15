@@ -1,9 +1,9 @@
 module.exports.controller = function(app) {
 var moment = require('moment');
-/**
- * GET /
- * Home page.
- */
+  /**
+   * GET /
+   * Home page.
+   */
 
   //show the 1000 most recent applicants for that specific orgid and show them
   app.get('/', app.locals.passportConf.isAuthenticated, function(req, res) {

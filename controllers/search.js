@@ -4,7 +4,7 @@ var moment = require('moment');
  * GET /search?query=searchterm
  * Global search
  */
- //do a search across all fields, return first 1000 results, order by timestamp
+ //do a search across all fields but only for that same organization, return first 1000 results, order by timestamp
   app.get('/search', app.locals.passportConf.isAuthenticated, function(req, res) {
     app.locals.elasticsearchClient.search({
       index: 'applications',

@@ -18,6 +18,7 @@ var expressValidator = require('express-validator');
 //individually, without minifying or concatenating anything. 
 //When you deploy your app, it will run in production mode, 
 //and so connect-assets will automatically serve a single concatenated + minified application.js.
+//TODO figure out how to define that it is prouction for connectAssets
 var connectAssets = require('connect-assets');
 
 

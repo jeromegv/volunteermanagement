@@ -1,0 +1,45 @@
+extends layout
+
+block content
+  .page-header
+    h3 Create New Role
+
+  form.form-horizontal(role='form', method='POST',action='/newrole?_csrf='+encodeURIComponent(_csrf), enctype="multipart/form-data")
+    //-TODO we probably dont want to put orgid inside apply.jade, perhaps it should be derived from
+    //-the position_id once someone has submitted it
+    input(type='hidden', name='orgid', value='#{user.orgid}')
+    .form-group
+      label(class='col-sm-2 control-label', for='hoursweek') How many hours a week?
+      .col-sm-8
+        input.form-control(type='text', name='hoursweek', id='hoursweek', autofocus=true)
+    .form-group
+      label(class='col-sm-2 control-label', for='startingdate') Starting date
+      .col-sm-8
+        input.form-control(type='text', name='startingdate', id='startingdate', class="datepicker", data-date-format="mm/dd/yy")
+    .form-group
+      label(class='col-sm-2 control-label') Type of role
+      .col-sm-8
+        .btn-group(data-toggle="buttons")
+          label(class='btn btn-primary active')
+            input(type="radio",name="type_of_role",id="type1",checked) 
+            |Volunteer
+          label(class='btn btn-primary')
+            input(type="radio",name="type_of_role",id="type1")
+            |Paid
+    .form-group
+      label(class='col-sm-2 control-label',for="tasks") Tasks and responsabilities
+      .col-sm-8
+        textarea.form-control(row="3",id="tasks")
+    .form-group
+      label(class='col-sm-2 control-label',for="skills") Skills needed for this role
+      .col-sm-8
+        input(type="hidden",class="form-control",id="skills")
+    .form-group
+      label(class='col-sm-2 control-label', for='jobdescriptionfile') Upload a job description (.docx, PDF)
+      .col-sm-8
+        input(type="file", name="jobdescriptionfile",id="jobdescriptionfile")
+    .form-group
+      .col-sm-offset-2.col-sm-8
+        button.btn.btn-default(type='submit')
+          i.fa.fa-plus
+          | Create Role
